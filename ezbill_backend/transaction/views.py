@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import FloatField
+
 class TransactionListCreateView(generics.ListCreateAPIView):
     
     queryset = Transaction.objects.all().order_by('-date','-id')
@@ -50,15 +51,17 @@ def dashboard_summary(request):
         day_total = Transaction.objects.filter(user=user, date=day, type='expense').aggregate(total=Sum('amount'))['total'] or 0
         day_total = -day_total 
         weekly_data.append({
-            'date': day.strftime('%b %d'),
+            'date': day.isoformat(),
             'amount': round(day_total, 2)
         })
+    print(f"Weekly data: {weekly_data}")
 
     # Group transactions by date
     transactions_by_day = {}
     transactions = Transaction.objects.filter(user=user).order_by('-date')
     for tx in transactions:
         local_date = tx.date
+        # print(f"tx.date raw: {tx.date}, type: {type(tx.date)}")
         key = local_date.strftime('%B %d, %A')
         if key not in transactions_by_day:
             transactions_by_day[key] = []
@@ -69,6 +72,7 @@ def dashboard_summary(request):
             'type': tx.type,
             'merchant': tx.merchant,
         })
+    print(f"Transactions by day: {transactions_by_day}")
     print(user.username)
     monthly_expenses_by_category = (
     Transaction.objects
