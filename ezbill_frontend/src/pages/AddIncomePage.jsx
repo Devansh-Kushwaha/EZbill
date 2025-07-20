@@ -1,18 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { Camera } from "lucide-react";
 import BottomNav from "../components/BottomNav";
-import { useNavigate } from "react-router-dom";import React from 'react'
-import getValidAccessToken from "../utils/getValidAccessToken"; 
+import { useNavigate } from "react-router-dom";
+import getValidAccessToken from "../utils/getValidAccessToken";
+
 function AddIncomePage() {
-    const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [category, setCategory] = useState("");
   const navigate = useNavigate();
 
   const categories = ["Shopping", "Food", "Beverages", "Cosmetics", "Bill"];
+
+  // Set default current date and time
+  useEffect(() => {
+    const now = new Date();
+    setDate(now.toISOString().slice(0, 10)); // YYYY-MM-DD
+    setTime(now.toTimeString().slice(0, 5)); // HH:MM
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,33 +32,37 @@ function AddIncomePage() {
     }
 
     const data = {
-      amount: Math.abs(parseFloat(amount)), // force negative for expense
+      amount: Math.abs(parseFloat(amount)),
       category,
       merchant: note,
       date,
-      type: "income"
+      time,
+      type: "income",
     };
 
     const res = await fetch("http://localhost:8000/api/transactions/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
 
     if (res.ok) {
       navigate("/dashboard");
     } else {
-      alert("Failed to add expense.");
+      alert("Failed to add income.");
     }
   };
+
   return (
     <div className="min-h-screen bg-[#FEEBCB] p-6 font-sans">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">EZbill</h1>
-        <a href="/dashboard" className="text-md font-medium text-blue-600">&lt; Back</a>
+        <a href="/dashboard" className="text-md font-medium text-blue-600">
+          &lt; Back
+        </a>
       </div>
 
       <h2 className="text-2xl font-semibold mb-4">Add Income</h2>
@@ -76,30 +88,23 @@ function AddIncomePage() {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="rounded-2xl border px-4 py-2"
+            required
           />
-          {/* <div>
-            <p className="mb-2 font-medium">Category</p>
-            <div className="flex flex-wrap gap-2">
-              {categories.map(cat => (
-                <button
-                  type="button"
-                  key={cat}
-                  onClick={() => setCategory(cat)}
-                  className={`px-4 py-1 rounded-full ${category === cat ? "bg-[#FFE4B5]" : "bg-gray-100"}`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div> */}
+          <Input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="rounded-2xl border px-4 py-2"
+            required
+          />
 
           <div className="flex space-x-4 items-center">
-            <Button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-full">
+            <Button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-2 rounded-full"
+            >
               Submit
             </Button>
-            {/* <button type="button" className="bg-green-600 p-3 rounded-full">
-              <Camera className="text-white" />
-            </button> */}
           </div>
         </form>
       </div>
@@ -107,7 +112,7 @@ function AddIncomePage() {
       <div className="text-6xl absolute bottom-4 right-4">💸</div>
       <BottomNav />
     </div>
-  )
+  );
 }
 
-export default AddIncomePage
+export default AddIncomePage;

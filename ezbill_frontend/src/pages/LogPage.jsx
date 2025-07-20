@@ -7,6 +7,8 @@ import getValidAccessToken from "../utils/getValidAccessToken";
 import { useNavigate } from "react-router-dom";
 
 const LogPage = () => {
+  
+  
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([
     "Shopping", "Food", "Beverages", "Cosmetics", "Bill"

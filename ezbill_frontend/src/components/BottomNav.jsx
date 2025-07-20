@@ -16,16 +16,11 @@ const BottomNav = () => {
   const fileInputRef = useRef();
 
   const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        localStorage.setItem("receiptImage", reader.result);
-        navigate("/preview");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const file = e.target.files[0];
+  if (file) {
+    navigate("/preview", { state: { file } }); // pass file through state
+  }
+};
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white pt-16 pb-4 shadow-lg rounded-t-3xl flex items-end justify-around z-50">
       <button
@@ -45,7 +40,7 @@ const BottomNav = () => {
 
       <input
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf"
         ref={fileInputRef}
         className="hidden"
         onChange={handleImageSelect}

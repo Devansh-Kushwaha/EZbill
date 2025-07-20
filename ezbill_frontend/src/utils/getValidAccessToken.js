@@ -4,7 +4,7 @@ export default async function getValidAccessToken() {
   const refresh = localStorage.getItem("refreshToken");
 
   // 1. Try verifying current access token
-  const verifyRes = await fetch("http://localhost:8000/api/token/verify/", {
+  const verifyRes = await fetch("http://localhost:8000/api/users/verify/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: access }),

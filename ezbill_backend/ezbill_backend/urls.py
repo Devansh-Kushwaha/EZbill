@@ -20,9 +20,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/receipt/', include('receipt.urls')), 
-    path('api/users/', include('users.urls')),
-    path('api/transactions/', include('transaction.urls')),
-    path('api/users/', include('users.urls')),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('admin/', admin.site.urls), # Admin panel route: Access at /admin/
+    path('api/receipt/', include('receipt.urls')), # Routes starting with /api/receipt/ are handled by receipt.urls
+    path('api/users/', include('users.urls')),  # Routes for user-related functionality including login, signup, profile
+    path('api/transactions/', include('transaction.urls')), # Routes for transactions
+    
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # Serve uploaded media files (e.g., receipt images) in development

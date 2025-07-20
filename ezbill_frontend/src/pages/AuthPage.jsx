@@ -9,7 +9,11 @@ export default function AuthPage({ type = "login" }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    ...(isLogin ? {} : { confirmPassword: "" }),
+    username: "",
+    confirm_password: "", // Only used for signup
+
+    // ...(isLogin ? {} : {email:"",username:"", confirm_password: "" }),
+
   });
 
   const handleChange = (e) => {
@@ -20,16 +24,22 @@ export default function AuthPage({ type = "login" }) {
     e.preventDefault();
     try {
         if (isLogin) {
-        formData.username='devansh'
-        const tokens = await loginUser(formData);
+        // formData.username='devansh'
+        const{email, password} = formData;
+        const tokens = await loginUser({email, password});
         localStorage.setItem("accessToken", tokens.access);
-        console.log("Login successful", tokens);
+        // console.log("Login successful", tokens);
       localStorage.setItem("refreshToken", tokens.refresh); 
       window.location.href = "/dashboard";
         } else {
-        await registerUser(formData);
-        window.location.href = "/login"; // Redirect after signup
-        }
+      const { email, password, username, confirm_password } = formData;
+      if (password !== confirm_password) {
+        alert("Passwords do not match");
+        return;
+      }
+      await registerUser({ email, password, username });
+      window.location.href = "/login";
+    }
     } catch (error) {
         alert(error.message); // Better: show error UI
 }
@@ -52,6 +62,14 @@ export default function AuthPage({ type = "login" }) {
               required
             />
             <Input
+              type="text"
+              name="username"
+              placeholder="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+            <Input
               type="password"
               name="password"
               placeholder="Password"
@@ -62,9 +80,9 @@ export default function AuthPage({ type = "login" }) {
             {!isLogin && (
               <Input
                 type="password"
-                name="confirmPassword"
+                name="confirm_password"
                 placeholder="Confirm Password"
-                value={formData.confirmPassword}
+                value={formData.confirm_password}
                 onChange={handleChange}
                 required
               />

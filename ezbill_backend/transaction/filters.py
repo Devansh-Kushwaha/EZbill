@@ -9,4 +9,8 @@ class TransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = Transaction
-        fields = ['category', 'source']
+        fields = ['category', 'source','type']
+        
+#Example usage from API:
+# GET /api/transactions/?amount_min=100&amount_max=500&date_min=2025-07-01&date_max=2025-07-31&type=expense
+

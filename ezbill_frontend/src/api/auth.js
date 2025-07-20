@@ -1,12 +1,13 @@
 const BASE_URL = "http://localhost:8000/api"; // Update to your backend URL
 
 export async function loginUser(credentials) {
+  console.log("Login credentials sent:", credentials);
   const res = await fetch(`${BASE_URL}/users/login/`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(credentials)
+    body: JSON.stringify(credentials),
   });
 
   if (!res.ok) {
@@ -17,12 +18,15 @@ export async function loginUser(credentials) {
 }
 
 export async function registerUser(userData) {
+  console.log("User data sent:", userData)
+  userData.confirm_password=userData.password;
   const res = await fetch(`${BASE_URL}/users/register/`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(userData)
+    body: JSON.stringify(userData),
+    
   });
 
   if (!res.ok) {

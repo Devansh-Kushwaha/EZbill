@@ -7,12 +7,17 @@ import { useNavigate } from "react-router-dom";
 import getValidAccessToken from "../utils/getValidAccessToken"; 
 import BottomNav from "../components/BottomNav";
 export default function AddExpensePage() {
+  const now = new Date();
+    const defaultDate = now.toISOString().split('T')[0];
+    const defaultTime = now.toTimeString().split(' ')[0].slice(0, 5);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
-  const [date, setDate] = useState("");
-  const [category, setCategory] = useState("");
-  const navigate = useNavigate();
+  const [time, setTime] = useState(defaultTime);
 
+  const [date, setDate] = useState(defaultDate);
+  const [category, setCategory] = useState(categories[0]);
+  const navigate = useNavigate();
+    
   const categories = ["Shopping", "Food", "Beverages", "Cosmetics", "Bill"];
 
   const handleSubmit = async (e) => {
@@ -29,6 +34,7 @@ export default function AddExpensePage() {
       category,
       merchant: note,
       date,
+      time,
       type: "expense"
     };
 
@@ -79,6 +85,12 @@ export default function AddExpensePage() {
             onChange={(e) => setDate(e.target.value)}
             className="rounded-2xl border px-4 py-2"
           />
+          <Input
+  type="time"
+  value={time}
+  onChange={(e) => setTime(e.target.value)}
+  className="rounded-2xl border px-4 py-2"
+/>
           <div>
             <p className="mb-2 font-medium">Category</p>
             <div className="flex flex-wrap gap-2">

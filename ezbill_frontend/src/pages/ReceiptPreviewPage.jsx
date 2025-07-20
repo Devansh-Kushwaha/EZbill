@@ -2,34 +2,50 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ReceiptPreviewPage = () => {
-  const [imageData, setImageData] = useState(null);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("");
-  const categories = ["Shopping", "Food", "Beverages", "Cosmetics", "Bill"];
+  const [fileUrl, setFileUrl] = useState(null);
+  const [fileType, setFileType] = useState(null);
+
+  const location = useLocation();
   const navigate = useNavigate();
+  const categories = ["Shopping", "Food", "Beverages", "Cosmetics", "Bill"];
 
   useEffect(() => {
-    const data = localStorage.getItem("receiptImage");
-    if (!data) return navigate("/log");
+    const file = location.state?.file;
 
-    setImageData(data);
-    uploadReceipt(data);
+    if (!file) {
+      navigate("/dashboard");
+      return;
+    }
+
+    const type = file.type;
+
+    setFileUrl(URL.createObjectURL(file));
+    setFileType(type);
+    uploadReceipt(file);
   }, []);
 
-  const uploadReceipt = async (base64) => {
+  const uploadReceipt = async (file) => {
     try {
-      const blob = await fetch(base64).then(res => res.blob());
       const formData = new FormData();
-      formData.append("file", blob, "receipt.png");
+      formData.append("file", file);
 
-      const res = await axios.post("http://localhost:8000/api/receipt/upload/", formData);
+      const res = await axios.post("http://localhost:8000/api/receipt/upload/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       setAmount(res.data.amount);
     } catch (err) {
-      console.error("Error uploading receipt:", err);
+      console.error("Error uploading receipt:", err.response?.data || err.message);
+      alert("Failed to process receipt. Please try again.");
+      navigate("/dashboard");
     }
   };
 
@@ -37,20 +53,24 @@ const ReceiptPreviewPage = () => {
     try {
       const token = localStorage.getItem("accessToken");
 
-      await axios.post("http://localhost:8000/api/transactions/", {
-        amount: -Math.abs(amount), // Expense
-        merchant: note,
-        category,
-        source: "receipt",
-        type: "expense"
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      await axios.post(
+        "http://localhost:8000/api/transactions/",
+        {
+          amount: -Math.abs(amount),
+          merchant: note,
+          category,
+          source: "receipt",
+          type: "expense",
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      navigate("/log");
+      navigate("/dashboard");
     } catch (err) {
       console.error("Error submitting transaction:", err);
     }
@@ -60,14 +80,21 @@ const ReceiptPreviewPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#FED6A3] to-[#FEEBCB] p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">EZbill</h1>
-        <button onClick={() => navigate(-1)} className="text-sm">&lt; Back</button>
+        <button onClick={() => navigate(-1)} className="text-sm">
+          &lt; Back
+        </button>
       </div>
 
       <div className="flex flex-col lg:flex-row justify-center gap-8">
         {/* Preview Section */}
         <div className="bg-[#FFF5E5] rounded-2xl p-6 w-full lg:w-1/2">
           <h2 className="text-xl font-semibold mb-4">Preview</h2>
-          {imageData && <img src={imageData} alt="receipt" className="rounded-xl" />}
+          {fileUrl && fileType?.startsWith("image") && (
+            <img src={fileUrl} alt="receipt" className="rounded-xl" />
+          )}
+          {fileUrl && fileType === "application/pdf" && (
+            <iframe src={fileUrl} title="receipt-pdf" className="w-full h-[400px]" />
+          )}
         </div>
 
         {/* Form Section */}

@@ -11,18 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-n(0c)dn)xj+7rpx8z-fk^&e1z-)p6kah*^9k=+zg9$e^e33$d8'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -44,23 +40,24 @@ INSTALLED_APPS = [
     'users',   # Custom app for user management
     'transaction', # Custom app for handling income/ expense 
 ]
-TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = 'Asia/Kolkata' #Indian Standard Time
 USE_TZ = True
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication'],
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'], #JWT Authentication
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'], # Django Filter Backend
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination', # Django Pagination Backend
     'PAGE_SIZE': 10,
 #     )
 }
 
-from datetime import timedelta
+
 
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=23),  # or very short
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=23),  
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
@@ -80,7 +77,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware"
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True # Allow all origins for CORS
 
 ROOT_URLCONF = 'ezbill_backend.urls'
 
