@@ -52,7 +52,8 @@ const handleUpload = async () => {
     date_min: "",
     date_max: "",
     amount: 5000,
-    page: 1
+    page: 1,
+    type: "",
   });
   const [count, setCount] = useState(0);
   ;
@@ -68,8 +69,16 @@ const handleUpload = async () => {
         category: filters.category || undefined,
         date_min: filters.date_min || undefined,
         date_max: filters.date_max || undefined,
-        amount_min: -filters.amount,
-        amount_max: filters.amount,
+        ...(filters.amountEnabled
+  ? {
+      ...(filters.type === "income"
+        ? { amount_min: 0, amount_max: filters.amount }
+        : filters.type === "expense"
+        ? { amount_min: -filters.amount, amount_max: 0 }
+        : { amount_min: -filters.amount, amount_max: filters.amount }),
+    }
+  : {}),
+        type: filters.type || undefined,
         page: filters.page
       };
       const  token  = await getValidAccessToken()
@@ -113,6 +122,15 @@ const handleUpload = async () => {
               <option key={tag} value={tag}>{tag}</option>
             ))}
           </select>
+          <select
+  className="p-2 rounded-xl border"
+  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+  value={filters.type}
+>
+  <option value="">All Types</option>
+  <option value="income">Income</option>
+  <option value="expense">Expense</option>
+</select>
 
           <input
             type="date"
@@ -129,18 +147,36 @@ const handleUpload = async () => {
         </div>
 
         <div className="flex flex-col">
-          <label className="text-sm mb-1">Amount Range: ${0} - ${filters.amount}</label>
-          <Slider
-            value={filters.amount}
-            onChange={(e, value) =>
-    setFilters(prev => ({ ...prev, amount: value }))
-  }
-            valueLabelDisplay="on"
-            step={100}
-            min={0}
-            max={5000}
-          />
-        </div>
+  <label className="flex items-center space-x-2 mb-2">
+    <input
+      type="checkbox"
+      checked={filters.amountEnabled}
+      onChange={(e) =>
+        setFilters((prev) => ({ ...prev, amountEnabled: e.target.checked }))
+      }
+    />
+    <span className="text-sm">Enable Amount Filter</span>
+  </label>
+
+  {filters.amountEnabled && (
+    <>
+      <label className="text-sm mb-1">
+        Amount Range: ₹0 - ₹{filters.amount}
+      </label>
+      <Slider
+        value={filters.amount}
+        onChange={(e, value) =>
+          setFilters((prev) => ({ ...prev, amount: value }))
+        }
+        valueLabelDisplay="on"
+        step={100}
+        min={0}
+        max={13000}
+      />
+    </>
+  )}
+</div>
+
       </div>
 
       <div className="bg-white p-4 rounded shadow mb-6">

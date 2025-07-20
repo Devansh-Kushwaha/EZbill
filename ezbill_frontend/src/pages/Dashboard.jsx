@@ -175,32 +175,39 @@ export default function DashboardPage() {
 
                     <h3 className="font-semibold text-xl mb-4 text-gray-700">Analytics: This Week</h3>
                     <div className="flex-grow flex items-end justify-around h-full py-4">
-                        {data.weekly_analytics && data.weekly_analytics.length > 0 ? (
-                            data.weekly_analytics.map((entry) => (
-                                <div key={entry.date} className="flex flex-col items-center">
-                                    <div
-                                        className="bg-purple-600 w-6 rounded-t-lg"
-                                        style={{
-                                            height: `${Math.min(100, entry.amount * 3)}px`, // Cap height at 100px
-                                            transition: "height 0.3s ease",
-                                        }}
-                                    />
-                                    <span className="text-xs mt-2 text-gray-600 font-medium">{getDayOfWeek(entry.date)}</span>
-                                </div>
-                            ))
-                        ) : (
-                            Array.from({ length: 7 }).map((_, i) => {
-                                const today = new Date();
-                                today.setDate(today.getDate() - (6 - i));
-                                return (
-                                    <div key={i} className="flex flex-col items-center">
-                                        <div className="bg-gray-300 w-6 rounded-t-lg" style={{ height: `20px` }} />
-                                        <span className="text-xs mt-2 text-gray-400 font-medium">{today.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
+  {data.weekly_analytics && data.weekly_analytics.length > 0 ? (() => {
+    const maxAmount = Math.max(...data.weekly_analytics.map(e => e.amount), 1); // avoid division by zero
+    return data.weekly_analytics.map((entry) => {
+      const height = (entry.amount / maxAmount) * 100; // normalize to 100px max
+      return (
+        <div key={entry.date} className="flex flex-col items-center">
+          <div
+            className="bg-purple-600 w-6 rounded-t-lg"
+            style={{
+              height: `${height}px`,
+              transition: "height 0.3s ease",
+            }}
+          />
+          <span className="text-xs mt-2 text-gray-600 font-medium">{getDayOfWeek(entry.date)}</span>
+        </div>
+      );
+    });
+  })() : (
+    Array.from({ length: 7 }).map((_, i) => {
+      const today = new Date();
+      today.setDate(today.getDate() - (6 - i));
+      return (
+        <div key={i} className="flex flex-col items-center">
+          <div className="bg-gray-300 w-6 rounded-t-lg" style={{ height: `20px` }} />
+          <span className="text-xs mt-2 text-gray-400 font-medium">
+            {today.toLocaleDateString('en-US', { weekday: 'short' })}
+          </span>
+        </div>
+      );
+    })
+  )}
+</div>
+
                     {!hasAnalyticsData && (
                         <div className="text-center text-gray-500 mt-4">
                             <p>No analytics data for this week.</p>
@@ -215,18 +222,22 @@ export default function DashboardPage() {
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie
-                                data={data.monthly_expense_chart}
-                                dataKey="amount"
-                                nameKey="category"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={100}
-                                label
-                            >
-                                {data.monthly_expense_chart.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                                ))}
-                            </Pie>
+  data={data.monthly_expense_chart.map(item => ({
+    ...item,
+    category: item.category && item.category.trim() ? item.category : "Miscellaneous"
+  }))}
+  dataKey="amount"
+  nameKey="category"
+  cx="50%"
+  cy="50%"
+  outerRadius={100}
+  label
+>
+  {data.monthly_expense_chart.map((_, index) => (
+    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+  ))}
+</Pie>
+
                             <Tooltip formatter={(value) => `₹${value.toFixed(2)}`} />
                             <Legend />
                         </PieChart>

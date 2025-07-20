@@ -111,9 +111,6 @@ export default function AddExpensePage() {
             <Button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-full">
               Submit
             </Button>
-            <button type="button" className="bg-green-600 p-3 rounded-full">
-              <Camera className="text-white" />
-            </button>
           </div>
         </form>
       </div>

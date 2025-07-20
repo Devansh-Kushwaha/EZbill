@@ -46,7 +46,7 @@ export default function AuthPage({ type = "login" }) {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-sky-100 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#fcd7b7] p-4">
       <Card className="max-w-sm w-full">
         <CardContent>
           <h2 className="text-2xl font-bold mb-6 text-center">
@@ -61,14 +61,16 @@ export default function AuthPage({ type = "login" }) {
               onChange={handleChange}
               required
             />
-            <Input
-              type="text"
-              name="username"
-              placeholder="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-            />
+            {!isLogin && (
+              <Input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            )}
             <Input
               type="password"
               name="password"
