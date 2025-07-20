@@ -116,7 +116,7 @@ export default function DashboardPage() {
     const hasAnalyticsData = data.weekly_analytics.some(entry => entry.amount > 0);
 
     return (
-        <div className="relative p-6 bg-orange-50 min-h-screen rounded-xl font-sans text-gray-800 pb-28">
+        <div className="relative p-6 bg-gradient-to-b from-[#FED6A3] to-[#FEEBCB] min-h-screen rounded-xl font-sans text-gray-800 pb-28">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">EZbill</h1>
 
@@ -263,14 +263,7 @@ export default function DashboardPage() {
                 </div>
             )}
 
-
-
             <div className="absolute bottom-32 left-6 w-24 h-24 bg-cover bg-center" style={{ backgroundImage: "url('/path/to/your/money_character.png')" }}>
-                <div className="w-24 h-24 bg-green-200 rounded-full flex items-center justify-center text-4xl" title="Happy Money Character">
-                    💶
-                </div>
-
-
                 <BottomNav />
             </div>
 

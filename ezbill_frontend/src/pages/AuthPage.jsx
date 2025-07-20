@@ -46,7 +46,7 @@ export default function AuthPage({ type = "login" }) {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fcd7b7] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#FED6A3] to-[#FEEBCB] p-4">
       <Card className="max-w-sm w-full">
         <CardContent>
           <h2 className="text-2xl font-bold mb-6 text-center">

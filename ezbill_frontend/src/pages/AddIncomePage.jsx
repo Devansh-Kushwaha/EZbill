@@ -57,7 +57,7 @@ function AddIncomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FEEBCB] p-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-[#FED6A3] to-[#FEEBCB] p-6 font-sans">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">EZbill</h1>
         <a href="/dashboard" className="text-md font-medium text-blue-600">

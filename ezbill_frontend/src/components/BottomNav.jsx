@@ -5,11 +5,10 @@ import {
   WalletIcon,
   ArrowDownCircleIcon,
   ArrowUpCircleIcon,
-  ArrowPathIcon,
-  PlusIcon,
   CameraIcon
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { LayoutDashboardIcon } from "lucide-react";
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -64,7 +63,7 @@ const BottomNav = () => {
         className="flex flex-col items-center text-gray-700 hover:text-purple-600 transition-colors -mt-10"
         onClick={() => navigate("/dashboard")}
       >
-        <ArrowPathIcon className="w-6 h-6 mb-1" />
+        <LayoutDashboardIcon className="w-6 h-6 mb-1" />
         <span className="text-xs">Dashboard</span>
       </button>
     </div>
