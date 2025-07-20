@@ -31,6 +31,8 @@ EZbill is your own smart expense manager that helps you track income, expenses, 
 
 [![Watch the demo](https://img.youtube.com/vi/t11M273i4sw/0.jpg)](https://youtu.be/t11M273i4sw)
 
+Watch Here: https://youtu.be/t11M273i4sw
+
 ---
 
 ## 🧠 How AI is Used
