@@ -7,7 +7,40 @@ import getValidAccessToken from "../utils/getValidAccessToken";
 import { useNavigate } from "react-router-dom";
 
 const LogPage = () => {
-  
+  const [file, setFile] = useState(null);
+const [uploading, setUploading] = useState(false);
+
+const handleFileChange = (e) => {
+  setFile(e.target.files[0]);
+};
+
+const handleUpload = async () => {
+  if (!file) {
+    alert("Please choose a PDF file first.");
+    return;
+  }
+
+  setUploading(true);
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const token = localStorage.getItem("accessToken");
+    await axios.post("http://localhost:8000/api/transactions/upload-receipt/", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    alert("Transactions extracted and saved!");
+    window.location.reload();
+  } catch (err) {
+    alert("Failed to upload: " + err.message);
+  } finally {
+    setUploading(false);
+  }
+};
   
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([
@@ -109,6 +142,24 @@ const LogPage = () => {
           />
         </div>
       </div>
+
+      <div className="bg-white p-4 rounded shadow mb-6">
+  <h3 className="text-lg font-semibold mb-2">Upload PDF Receipt</h3>
+  <input
+    type="file"
+    accept="application/pdf"
+    onChange={handleFileChange}
+    className="mb-2"
+  />
+  <button
+    onClick={handleUpload}
+    disabled={uploading}
+    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+  >
+    {uploading ? "Processing..." : "Upload & Parse"}
+  </button>
+</div>
+
 
       {/* Table */}
       <div className="bg-[#FFF5E5] rounded-2xl p-4 overflow-y-auto max-h-[500px]">

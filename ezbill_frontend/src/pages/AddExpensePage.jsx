@@ -15,7 +15,7 @@ export default function AddExpensePage() {
   const [time, setTime] = useState(defaultTime);
 
   const [date, setDate] = useState(defaultDate);
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState("");
   const navigate = useNavigate();
     
   const categories = ["Shopping", "Food", "Beverages", "Cosmetics", "Bill"];

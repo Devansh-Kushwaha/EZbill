@@ -1,107 +1,93 @@
-from rest_framework import generics
-from .models import Transaction
-from .serializers import TransactionSerializer
-from django.db.models.functions import Coalesce
-
-from django_filters.rest_framework import DjangoFilterBackend
-from .filters import TransactionFilter
-
-from datetime import timedelta, date
-from django.utils.timezone import localtime
-from django.utils import timezone
-
-from django.db.models import Sum
+from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import FloatField
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser
+
+from .models import Transaction
+from .serializers import TransactionSerializer
+from .filters import TransactionFilter
+
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models.functions import Coalesce
+from django.db.models import Sum, FloatField
+from django.utils.timezone import localtime
+from django.utils import timezone
+from datetime import timedelta, date
+
+import fitz  # PyMuPDF
+import ollama
+import json
+from datetime import datetime
+import re
 
 
+# ---------------------- Transaction CRUD Views ---------------------- #
 
-# API view to list all transactions and allow creation of new ones.
 class TransactionListCreateView(generics.ListCreateAPIView):
-    
-    # queryset = Transaction.objects.all().order_by('-date','-id')
     serializer_class = TransactionSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TransactionFilter
-    
+
     def get_queryset(self):
         return Transaction.objects.filter(user=self.request.user).order_by('-date', '-id')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user,source='manual')
+        serializer.save(user=self.request.user, source='manual')
 
-# API view to retrieve, update, or delete a specific transaction.
+
 class TransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
 
-# transactions/views.py
-
+# ---------------------- Dashboard Summary ---------------------- #
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_summary(request):
-    """
-    Returns a dashboard summary for the logged-in user, including:
-    - Current balance
-    - Monthly income and expenses
-    - Weekly expense analytics
-    - Daily grouped transactions
-    - Monthly expense by category chart
-    """
     user = request.user
     today = localtime(timezone.now()).date()
     start_of_month = today.replace(day=1)
     last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
 
-    # ---------------- MONTHLY INCOME/EXPENSE ---------------- #
     income_total = Transaction.objects.filter(user=user, type='income', date__gte=start_of_month).aggregate(total=Sum('amount'))['total'] or 0
     expense_total = Transaction.objects.filter(user=user, type='expense', date__gte=start_of_month).aggregate(total=Sum('amount'))['total'] or 0
-    
-    expense_total = -expense_total  
+    expense_total = -expense_total
     current_balance = income_total - expense_total
 
-    # ---------------- WEEKLY EXPENSE ANALYTICS ---------------- #
     weekly_data = []
     for day in last_7_days:
         day_total = Transaction.objects.filter(user=user, date=day, type='expense').aggregate(total=Sum('amount'))['total'] or 0
-        day_total = -day_total 
         weekly_data.append({
             'date': day.isoformat(),
-            'amount': round(day_total, 2)
+            'amount': round(-day_total, 2)
         })
 
-    # ---------------- GROUP TRANSACTIONS BY DAY ---------------- #
     transactions_by_day = {}
     transactions = Transaction.objects.filter(user=user).order_by('-date')
     for tx in transactions:
-        # print(f"tx.date raw: {tx.date}, type: {type(tx.date)}")
         key = tx.date.strftime('%B %d, %A')
-        if key not in transactions_by_day:
-            transactions_by_day[key] = []
-        transactions_by_day[key].append({
+        transactions_by_day.setdefault(key, []).append({
             'id': tx.id,
             'amount': tx.amount,
             'category': tx.category,
             'type': tx.type,
             'merchant': tx.merchant,
         })
-    
-    # ---------------- MONTHLY EXPENSE BY CATEGORY (Chart) ---------------- #
+
     monthly_expenses_by_category = (
-    Transaction.objects
-    .filter(user=user, type='expense', date__gte=start_of_month)
-    .values('category')
-    .annotate(total=Coalesce(Sum('amount', output_field=FloatField()), 0.0))
-)
+        Transaction.objects
+        .filter(user=user, type='expense', date__gte=start_of_month)
+        .values('category')
+        .annotate(total=Coalesce(Sum('amount', output_field=FloatField()), 0.0))
+    )
 
     monthly_expense_chart = [
-    {"category": item["category"], "amount": float(abs(item["total"]))}
-    for item in monthly_expenses_by_category]
-    
-    # ---------------- FINAL RESPONSE ---------------- #
+        {"category": item["category"], "amount": float(abs(item["total"]))}
+        for item in monthly_expenses_by_category
+    ]
+
     return Response({
         "username": user.username,
         'current_balance': round(current_balance, 2),
@@ -112,12 +98,11 @@ def dashboard_summary(request):
         'monthly_expense_chart': monthly_expense_chart,
     })
 
+# ---------------------- Income vs Expense Chart ---------------------- #
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def income_vs_expense_over_time(request):
-    """
-    Returns the income and expense trend for the last 30 days.
-    """
     user = request.user
     today = date.today()
     start_date = today - timedelta(days=29)
@@ -126,7 +111,6 @@ def income_vs_expense_over_time(request):
     for i in range(30):
         day = start_date + timedelta(days=i)
         day_transactions = Transaction.objects.filter(user=user, date=day)
-
         income = day_transactions.filter(type='income').aggregate(Sum('amount'))['amount__sum'] or 0
         expense = day_transactions.filter(type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
 
@@ -137,3 +121,83 @@ def income_vs_expense_over_time(request):
         })
 
     return Response(data)
+
+# ---------------------- PDF Receipt Upload ---------------------- #
+
+class ReceiptUploadView(APIView):
+    parser_classes = [MultiPartParser]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        uploaded_file = request.FILES.get("file")
+        if not uploaded_file:
+            return Response({"error": "No file uploaded"}, status=400)
+
+        # Step 1: Extract raw text
+        text = ""
+        try:
+            with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
+                for page in doc:
+                    text += page.get_text()
+        except Exception as e:
+            return Response({"error": "Failed to read PDF"}, status=500)
+
+        print("Extracted Text from PDF:\n", text)
+
+        # Step 2: Use LLM
+        prompt = f"""This is a receipt-like table:\n{text}\n
+Convert each row into a JSON object with keys: merchant, amount, date (dd/mm/yyyy), time.
+Return only a JSON array. Do NOT include explanations. remove ```json.```, if present"""  # strict
+
+        try:
+            print("Using LLM to parse receipt text...")
+            response = ollama.chat(
+                model="mistral",
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            raw_content = response.get('message', {}).get('content', "").strip()
+            print("Raw LLM Response:\n", raw_content)
+
+            # Try to extract JSON from inside ```json ... ```
+            json_match = re.search(r"```(?:json)?\s*(\[\s*{.*?}\s*])\s*```", raw_content, re.DOTALL)
+            if json_match:
+                raw_content = json_match.group(1).strip()
+            elif raw_content.startswith("[") and raw_content.endswith("]"):
+                # JSON directly returned without code block
+                pass
+            else:
+                print("❌ JSON not found in expected format.")
+                return Response({"error": "Failed to locate JSON array in LLM output"}, status=500)
+
+
+
+            # Parse response
+            try:
+                parsed_entries = json.loads(raw_content)
+            except json.JSONDecodeError:
+                print(" json.loads failed, trying eval()")
+                parsed_entries = eval(raw_content)
+
+        except Exception as err:
+            print("Parsing LLM response failed:", err)
+            return Response({"error": "Failed to parse receipt data"}, status=500)
+
+        # Step 3: Save transactions
+        count = 0
+        for entry in parsed_entries:
+            try:
+                Transaction.objects.create(
+                    user=request.user,
+                    merchant=entry.get("merchant") or entry.get("note"),
+                    amount=-float(str(entry["amount"]).replace(",", "")),
+                    date=datetime.strptime(entry["date"], "%d/%m/%Y").date(),
+                    time=entry["time"],
+                    type="expense",
+                    source="extracted"
+                )
+                count += 1
+            except Exception as err:
+                print("Skipping invalid row:", entry, "because:", err)
+
+        return Response({"status": "success", "added": count}, status=status.HTTP_200_OK)

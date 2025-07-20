@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dashboard_summary,TransactionListCreateView, TransactionDetailView, income_vs_expense_over_time
+from .views import dashboard_summary,TransactionListCreateView, TransactionDetailView, income_vs_expense_over_time, ReceiptUploadView
  
 
 urlpatterns = [
@@ -14,4 +14,7 @@ urlpatterns = [
     
     # URL: /api/transactions/income-vs-expense/
     path('income-vs-expense/', income_vs_expense_over_time),
+    
+    # URL: /api/transactions/upload-receipt/
+    path("upload-receipt/", ReceiptUploadView.as_view()),
 ]
