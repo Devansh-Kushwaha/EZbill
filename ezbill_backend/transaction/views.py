@@ -144,7 +144,7 @@ class ReceiptUploadView(APIView):
 
         # Use LLM (mistral)
         prompt = f"""This is a receipt-like table:\n{text}\n
-Convert each row into a JSON object with keys: merchant, amount, date (dd/mm/yyyy), time.
+Convert each row into a JSON object with keys: merchant, amount, date (dd/mm/yyyy), time, tag.
 Return only a JSON array. Do NOT include explanations. remove ```json.```, if present"""  
 
         try:
@@ -187,7 +187,8 @@ Return only a JSON array. Do NOT include explanations. remove ```json.```, if pr
                     date=datetime.strptime(entry["date"], "%d/%m/%Y").date(),
                     time=entry["time"],
                     type="expense",
-                    source="extracted"
+                    source="extracted",
+                    category=entry.get("tag", "Uncategorized")
                 )
                 count += 1
             except Exception as err:

@@ -104,9 +104,11 @@ const LogPage = () => {
 
   return (
     <div className="bg-gradient-to-b from-[#FED6A3] to-[#FEEBCB] min-h-screen font-sans rounded-2xl p-6">
-      <div className="flex justify-between mb-4">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">EZbill</h1>
-        <button onClick={() => navigate(-1)} className="text-lg text-gray-600 underline">{"< Back"}</button>
+        <a href="/dashboard" className="text-md font-medium text-blue-600">
+          &lt; Back
+        </a>
       </div>
 
       {/* Filters */}
@@ -171,7 +173,7 @@ const LogPage = () => {
                 valueLabelDisplay="on"
                 step={100}
                 min={0}
-                max={13000}
+                max={130000}
               />
             </>
           )}
@@ -180,7 +182,7 @@ const LogPage = () => {
       </div>
 
       <div className="bg-white p-4 rounded shadow mb-6">
-        <h3 className="text-lg font-semibold mb-2">Upload PDF Receipt</h3>
+        <h3 className="text-lg font-semibold mb-2">Upload PDF Transactions</h3>
         <input
           type="file"
           accept="application/pdf"
@@ -214,7 +216,7 @@ const LogPage = () => {
             <span>{tx.date}</span>
             <span>{tx.category}</span>
             <span className={tx.amount < 0 ? "text-red-600" : "text-green-600"}>
-              {tx.amount < 0 ? `- $${Math.abs(tx.amount)}` : `+ $${tx.amount}`}
+              {tx.amount < 0 ? `- ₹${Math.abs(tx.amount)}` : `+ ₹${tx.amount}`}
             </span>
 
           </div>

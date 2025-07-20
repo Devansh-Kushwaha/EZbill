@@ -27,6 +27,12 @@ EZbill is your own smart expense manager that helps you track income, expenses, 
 
 ---
 
+### 🎥 Demo
+
+<video src="demo/demo.mp4" controls width="600"></video>
+
+---
+
 ## 🧠 How AI is Used
 
 This project uses `Ollama (mistral)`, a lightweight, locally-running Large Language Model (LLM), to parse text extracted from receipts (PDF or image). This ensures:
