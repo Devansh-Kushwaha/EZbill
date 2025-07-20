@@ -1,7 +1,7 @@
-const BASE_URL = "http://localhost:8000/api"; // Update to your backend URL
+const BASE_URL = "http://localhost:8000/api"; // Backend URL
 
+// --------------------------LOGIN FUNCTION--------------------------
 export async function loginUser(credentials) {
-  console.log("Login credentials sent:", credentials);
   const res = await fetch(`${BASE_URL}/users/login/`, {
     method: "POST",
     headers: {
@@ -17,16 +17,15 @@ export async function loginUser(credentials) {
   return res.json(); // Returns { access, refresh }
 }
 
+// --------------------------REGISTER FUNCTION--------------------------
 export async function registerUser(userData) {
-  console.log("User data sent:", userData)
-  userData.confirm_password=userData.password;
+  userData.confirm_password = userData.password;
   const res = await fetch(`${BASE_URL}/users/register/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(userData),
-    
   });
 
   if (!res.ok) {
@@ -44,6 +43,7 @@ export function getAuthHeaders() {
   };
 }
 
+// --------------------------LOGOUT FUNCTION--------------------------
 export function logout() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");

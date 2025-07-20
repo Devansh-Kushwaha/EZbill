@@ -35,15 +35,22 @@ const ReceiptPreviewPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await axios.post("http://localhost:8000/api/receipt/upload/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await axios.post(
+        "http://localhost:8000/api/receipt/upload/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       setAmount(res.data.amount);
     } catch (err) {
-      console.error("Error uploading receipt:", err.response?.data || err.message);
+      console.error(
+        "Error uploading receipt:",
+        err.response?.data || err.message
+      );
       alert("Failed to process receipt. Please try again.");
       navigate("/dashboard");
     }
@@ -93,7 +100,11 @@ const ReceiptPreviewPage = () => {
             <img src={fileUrl} alt="receipt" className="rounded-xl" />
           )}
           {fileUrl && fileType === "application/pdf" && (
-            <iframe src={fileUrl} title="receipt-pdf" className="w-full h-[400px]" />
+            <iframe
+              src={fileUrl}
+              title="receipt-pdf"
+              className="w-full h-[400px]"
+            />
           )}
         </div>
 

@@ -3,7 +3,7 @@ export default async function getValidAccessToken() {
   const access = localStorage.getItem("accessToken");
   const refresh = localStorage.getItem("refreshToken");
 
-  // 1. Try verifying current access token
+  // Try verifying current access token
   const verifyRes = await fetch("http://localhost:8000/api/users/verify/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -12,7 +12,7 @@ export default async function getValidAccessToken() {
 
   if (verifyRes.ok) return access;
 
-  // 2. If not valid, try refreshing
+  // If not valid, try refreshing
   const refreshRes = await fetch("http://localhost:8000/api/users/refresh/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -25,7 +25,7 @@ export default async function getValidAccessToken() {
     return newAccess;
   }
 
-  // 3. Token refresh failed
+  // Token refresh failed
   alert("Session expired. Please log in again.");
   localStorage.clear();
   window.location.href = "/login";

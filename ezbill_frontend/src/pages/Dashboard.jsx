@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Import icons if you're using Heroicons
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import BottomNav from "../components/BottomNav";
@@ -8,12 +7,10 @@ import {
     ShoppingCartIcon,
     ShoppingBagIcon,
     TagIcon,
-    BellIcon,
-    PlusIcon,
-    WalletIcon,
-    ArrowDownCircleIcon,
-    ArrowUpCircleIcon,
-    ArrowPathIcon,
+    CakeIcon,
+    BeakerIcon,
+    SparklesIcon,
+    ReceiptPercentIcon
 } from '@heroicons/react/24/outline';
 import getValidAccessToken from "../utils/getValidAccessToken";
 
@@ -26,6 +23,8 @@ export default function DashboardPage() {
 
     useEffect(() => {
         async function fetchChartData() {
+
+            // Fetch income vs expense data for the last 30 days
             try {
                 const token = await getValidAccessToken();
                 const res = await fetch("http://localhost:8000/api/transactions/income-vs-expense/", {
@@ -36,9 +35,8 @@ export default function DashboardPage() {
 
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
                 const chartJson = await res.json();
-                console.log("Income vs Expense data:", chartJson);
                 setIncomeVsExpenseData(chartJson.map(entry => {
-                    const dateOnly = entry.date.split('T')[0]; // Get "2025-07-19"
+                    const dateOnly = entry.date.split('T')[0];
                     return {
                         ...entry,
                         date: dateOnly,
@@ -54,6 +52,7 @@ export default function DashboardPage() {
 
         fetchChartData();
 
+        // Fetch dashboard data
         async function fetchData() {
             try {
                 const token = await getValidAccessToken();
@@ -96,11 +95,17 @@ export default function DashboardPage() {
     if (!data) return <p className="flex items-center justify-center min-h-screen bg-gray-100 text-xl font-semibold">Loading dashboard...</p>;
 
     const getCategoryIcon = (category) => {
-        switch (category.toLowerCase()) {
-            case 'shopping':
+        switch (category) {
+            case 'Shopping':
                 return <ShoppingCartIcon className="w-5 h-5 text-gray-600" />;
-            case 'coffee':
-                return <TagIcon className="w-5 h-5 text-gray-600" />;
+            case 'Food':
+                return <CakeIcon className="w-5 h-5 text-gray-600" />;
+            case 'Beverages':
+                return <BeakerIcon className="w-5 h-5 text-gray-600" />;
+            case 'Cosmetics':
+                return <SparklesIcon className="w-5 h-5 text-gray-600" />;
+            case 'Bill':
+                return <ReceiptPercentIcon className="w-5 h-5 text-gray-600" />;
             default:
                 return <ShoppingBagIcon className="w-5 h-5 text-gray-600" />;
         }
@@ -143,6 +148,8 @@ export default function DashboardPage() {
             <div className="flex flex-col lg:flex-row gap-6">
                 <div className="flex-1 bg-white p-6 rounded-lg shadow-md min-h-[300px] max-h-[400px] overflow-y-auto custom-scrollbar">
                     <h3 className="font-semibold text-xl mb-4 text-gray-700">Recent Transactions</h3>
+
+                    {/* Display transactions grouped by day */}
                     {hasTransactions ? (
                         Object.entries(data.transactions_by_day).map(([date, txs]) => (
                             <div key={date} className="mb-5 last:mb-0">
@@ -175,38 +182,38 @@ export default function DashboardPage() {
 
                     <h3 className="font-semibold text-xl mb-4 text-gray-700">Analytics: This Week</h3>
                     <div className="flex-grow flex items-end justify-around h-full py-4">
-  {data.weekly_analytics && data.weekly_analytics.length > 0 ? (() => {
-    const maxAmount = Math.max(...data.weekly_analytics.map(e => e.amount), 1); // avoid division by zero
-    return data.weekly_analytics.map((entry) => {
-      const height = (entry.amount / maxAmount) * 100; // normalize to 100px max
-      return (
-        <div key={entry.date} className="flex flex-col items-center">
-          <div
-            className="bg-purple-600 w-6 rounded-t-lg"
-            style={{
-              height: `${height}px`,
-              transition: "height 0.3s ease",
-            }}
-          />
-          <span className="text-xs mt-2 text-gray-600 font-medium">{getDayOfWeek(entry.date)}</span>
-        </div>
-      );
-    });
-  })() : (
-    Array.from({ length: 7 }).map((_, i) => {
-      const today = new Date();
-      today.setDate(today.getDate() - (6 - i));
-      return (
-        <div key={i} className="flex flex-col items-center">
-          <div className="bg-gray-300 w-6 rounded-t-lg" style={{ height: `20px` }} />
-          <span className="text-xs mt-2 text-gray-400 font-medium">
-            {today.toLocaleDateString('en-US', { weekday: 'short' })}
-          </span>
-        </div>
-      );
-    })
-  )}
-</div>
+                        {data.weekly_analytics && data.weekly_analytics.length > 0 ? (() => {
+                            const maxAmount = Math.max(...data.weekly_analytics.map(e => e.amount), 1); // avoid division by zero
+                            return data.weekly_analytics.map((entry) => {
+                                const height = (entry.amount / maxAmount) * 100; // normalize to 100px max
+                                return (
+                                    <div key={entry.date} className="flex flex-col items-center">
+                                        <div
+                                            className="bg-purple-600 w-6 rounded-t-lg"
+                                            style={{
+                                                height: `${height}px`,
+                                                transition: "height 0.3s ease",
+                                            }}
+                                        />
+                                        <span className="text-xs mt-2 text-gray-600 font-medium">{getDayOfWeek(entry.date)}</span>
+                                    </div>
+                                );
+                            });
+                        })() : (
+                            Array.from({ length: 7 }).map((_, i) => {
+                                const today = new Date();
+                                today.setDate(today.getDate() - (6 - i));
+                                return (
+                                    <div key={i} className="flex flex-col items-center">
+                                        <div className="bg-gray-300 w-6 rounded-t-lg" style={{ height: `20px` }} />
+                                        <span className="text-xs mt-2 text-gray-400 font-medium">
+                                            {today.toLocaleDateString('en-US', { weekday: 'short' })}
+                                        </span>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
 
                     {!hasAnalyticsData && (
                         <div className="text-center text-gray-500 mt-4">
@@ -222,21 +229,21 @@ export default function DashboardPage() {
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie
-  data={data.monthly_expense_chart.map(item => ({
-    ...item,
-    category: item.category && item.category.trim() ? item.category : "Miscellaneous"
-  }))}
-  dataKey="amount"
-  nameKey="category"
-  cx="50%"
-  cy="50%"
-  outerRadius={100}
-  label
->
-  {data.monthly_expense_chart.map((_, index) => (
-    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-  ))}
-</Pie>
+                                data={data.monthly_expense_chart.map(item => ({
+                                    ...item,
+                                    category: item.category && item.category.trim() ? item.category : "Miscellaneous"
+                                }))}
+                                dataKey="amount"
+                                nameKey="category"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={100}
+                                label
+                            >
+                                {data.monthly_expense_chart.map((_, index) => (
+                                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                                ))}
+                            </Pie>
 
                             <Tooltip formatter={(value) => `₹${value.toFixed(2)}`} />
                             <Legend />
@@ -266,9 +273,6 @@ export default function DashboardPage() {
             <div className="absolute bottom-32 left-6 w-24 h-24 bg-cover bg-center" style={{ backgroundImage: "url('/path/to/your/money_character.png')" }}>
                 <BottomNav />
             </div>
-
-
-
 
 
             <style>{`

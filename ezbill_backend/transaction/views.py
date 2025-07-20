@@ -16,7 +16,7 @@ from django.utils.timezone import localtime
 from django.utils import timezone
 from datetime import timedelta, date
 
-import fitz  # PyMuPDF
+import fitz 
 import ollama
 import json
 from datetime import datetime
@@ -133,7 +133,7 @@ class ReceiptUploadView(APIView):
         if not uploaded_file:
             return Response({"error": "No file uploaded"}, status=400)
 
-        # Step 1: Extract raw text
+        # Extract raw text
         text = ""
         try:
             with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
@@ -142,12 +142,10 @@ class ReceiptUploadView(APIView):
         except Exception as e:
             return Response({"error": "Failed to read PDF"}, status=500)
 
-        print("Extracted Text from PDF:\n", text)
-
-        # Step 2: Use LLM
+        # Use LLM (mistral)
         prompt = f"""This is a receipt-like table:\n{text}\n
 Convert each row into a JSON object with keys: merchant, amount, date (dd/mm/yyyy), time.
-Return only a JSON array. Do NOT include explanations. remove ```json.```, if present"""  # strict
+Return only a JSON array. Do NOT include explanations. remove ```json.```, if present"""  
 
         try:
             print("Using LLM to parse receipt text...")
@@ -157,17 +155,14 @@ Return only a JSON array. Do NOT include explanations. remove ```json.```, if pr
             )
 
             raw_content = response.get('message', {}).get('content', "").strip()
-            print("Raw LLM Response:\n", raw_content)
 
-            # Try to extract JSON from inside ```json ... ```
             json_match = re.search(r"```(?:json)?\s*(\[\s*{.*?}\s*])\s*```", raw_content, re.DOTALL)
             if json_match:
                 raw_content = json_match.group(1).strip()
             elif raw_content.startswith("[") and raw_content.endswith("]"):
-                # JSON directly returned without code block
+
                 pass
             else:
-                print("❌ JSON not found in expected format.")
                 return Response({"error": "Failed to locate JSON array in LLM output"}, status=500)
 
 
@@ -176,14 +171,12 @@ Return only a JSON array. Do NOT include explanations. remove ```json.```, if pr
             try:
                 parsed_entries = json.loads(raw_content)
             except json.JSONDecodeError:
-                print(" json.loads failed, trying eval()")
                 parsed_entries = eval(raw_content)
 
         except Exception as err:
-            print("Parsing LLM response failed:", err)
             return Response({"error": "Failed to parse receipt data"}, status=500)
 
-        # Step 3: Save transactions
+        # Save transactions
         count = 0
         for entry in parsed_entries:
             try:

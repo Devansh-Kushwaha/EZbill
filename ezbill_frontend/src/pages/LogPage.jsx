@@ -3,45 +3,45 @@ import axios from "axios";
 import BottomNav from "../components/BottomNav";
 import { Slider } from "@mui/material";
 // import { useAuth } from "../api/auth"; // assuming a custom hook
-import getValidAccessToken from "../utils/getValidAccessToken"; 
+import getValidAccessToken from "../utils/getValidAccessToken";
 import { useNavigate } from "react-router-dom";
 
 const LogPage = () => {
   const [file, setFile] = useState(null);
-const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-const handleFileChange = (e) => {
-  setFile(e.target.files[0]);
-};
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
 
-const handleUpload = async () => {
-  if (!file) {
-    alert("Please choose a PDF file first.");
-    return;
-  }
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Please choose a PDF file first.");
+      return;
+    }
 
-  setUploading(true);
-  const formData = new FormData();
-  formData.append("file", file);
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
 
-  try {
-    const token = localStorage.getItem("accessToken");
-    await axios.post("http://localhost:8000/api/transactions/upload-receipt/", formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    try {
+      const token = localStorage.getItem("accessToken");
+      await axios.post("http://localhost:8000/api/transactions/upload-receipt/", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    alert("Transactions extracted and saved!");
-    window.location.reload();
-  } catch (err) {
-    alert("Failed to upload: " + err.message);
-  } finally {
-    setUploading(false);
-  }
-};
-  
+      alert("Transactions extracted and saved!");
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to upload: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([
     "Shopping", "Food", "Beverages", "Cosmetics", "Bill"
@@ -70,18 +70,18 @@ const handleUpload = async () => {
         date_min: filters.date_min || undefined,
         date_max: filters.date_max || undefined,
         ...(filters.amountEnabled
-  ? {
-      ...(filters.type === "income"
-        ? { amount_min: 0, amount_max: filters.amount }
-        : filters.type === "expense"
-        ? { amount_min: -filters.amount, amount_max: 0 }
-        : { amount_min: -filters.amount, amount_max: filters.amount }),
-    }
-  : {}),
+          ? {
+            ...(filters.type === "income"
+              ? { amount_min: 0, amount_max: filters.amount }
+              : filters.type === "expense"
+                ? { amount_min: -filters.amount, amount_max: 0 }
+                : { amount_min: -filters.amount, amount_max: filters.amount }),
+          }
+          : {}),
         type: filters.type || undefined,
         page: filters.page
       };
-      const  token  = await getValidAccessToken()
+      const token = await getValidAccessToken()
 
       const res = await axios.get("http://localhost:8000/api/transactions/", {
         headers: { Authorization: `Bearer ${token}` },
@@ -123,14 +123,14 @@ const handleUpload = async () => {
             ))}
           </select>
           <select
-  className="p-2 rounded-xl border"
-  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-  value={filters.type}
->
-  <option value="">All Types</option>
-  <option value="income">Income</option>
-  <option value="expense">Expense</option>
-</select>
+            className="p-2 rounded-xl border"
+            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+            value={filters.type}
+          >
+            <option value="">All Types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
 
           <input
             type="date"
@@ -147,54 +147,54 @@ const handleUpload = async () => {
         </div>
 
         <div className="flex flex-col">
-  <label className="flex items-center space-x-2 mb-2">
-    <input
-      type="checkbox"
-      checked={filters.amountEnabled}
-      onChange={(e) =>
-        setFilters((prev) => ({ ...prev, amountEnabled: e.target.checked }))
-      }
-    />
-    <span className="text-sm">Enable Amount Filter</span>
-  </label>
+          <label className="flex items-center space-x-2 mb-2">
+            <input
+              type="checkbox"
+              checked={filters.amountEnabled}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, amountEnabled: e.target.checked }))
+              }
+            />
+            <span className="text-sm">Enable Amount Filter</span>
+          </label>
 
-  {filters.amountEnabled && (
-    <>
-      <label className="text-sm mb-1">
-        Amount Range: ₹0 - ₹{filters.amount}
-      </label>
-      <Slider
-        value={filters.amount}
-        onChange={(e, value) =>
-          setFilters((prev) => ({ ...prev, amount: value }))
-        }
-        valueLabelDisplay="on"
-        step={100}
-        min={0}
-        max={13000}
-      />
-    </>
-  )}
-</div>
+          {filters.amountEnabled && (
+            <>
+              <label className="text-sm mb-1">
+                Amount Range: ₹0 - ₹{filters.amount}
+              </label>
+              <Slider
+                value={filters.amount}
+                onChange={(e, value) =>
+                  setFilters((prev) => ({ ...prev, amount: value }))
+                }
+                valueLabelDisplay="on"
+                step={100}
+                min={0}
+                max={13000}
+              />
+            </>
+          )}
+        </div>
 
       </div>
 
       <div className="bg-white p-4 rounded shadow mb-6">
-  <h3 className="text-lg font-semibold mb-2">Upload PDF Receipt</h3>
-  <input
-    type="file"
-    accept="application/pdf"
-    onChange={handleFileChange}
-    className="mb-2"
-  />
-  <button
-    onClick={handleUpload}
-    disabled={uploading}
-    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-  >
-    {uploading ? "Processing..." : "Upload & Parse"}
-  </button>
-</div>
+        <h3 className="text-lg font-semibold mb-2">Upload PDF Receipt</h3>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileChange}
+          className="mb-2"
+        />
+        <button
+          onClick={handleUpload}
+          disabled={uploading}
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        >
+          {uploading ? "Processing..." : "Upload & Parse"}
+        </button>
+      </div>
 
 
       {/* Table */}
@@ -214,8 +214,8 @@ const handleUpload = async () => {
             <span>{tx.date}</span>
             <span>{tx.category}</span>
             <span className={tx.amount < 0 ? "text-red-600" : "text-green-600"}>
-  {tx.amount < 0 ? `- $${Math.abs(tx.amount)}` : `+ $${tx.amount}`}
-</span>
+              {tx.amount < 0 ? `- $${Math.abs(tx.amount)}` : `+ $${tx.amount}`}
+            </span>
 
           </div>
         ))}

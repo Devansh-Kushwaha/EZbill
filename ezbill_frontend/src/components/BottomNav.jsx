@@ -1,6 +1,6 @@
 // src/components/BottomNav.jsx
 
-import {useRef} from "react";
+import { useRef } from "react";
 import {
   WalletIcon,
   ArrowDownCircleIcon,
@@ -15,11 +15,11 @@ const BottomNav = () => {
   const fileInputRef = useRef();
 
   const handleImageSelect = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    navigate("/preview", { state: { file } }); // pass file through state
-  }
-};
+    const file = e.target.files[0];
+    if (file) {
+      navigate("/preview", { state: { file } }); // pass file through state
+    }
+  };
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white pt-16 pb-4 shadow-lg rounded-t-3xl flex items-end justify-around z-50">
       <button

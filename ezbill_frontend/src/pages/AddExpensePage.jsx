@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import getValidAccessToken from "../utils/getValidAccessToken"; 
+import getValidAccessToken from "../utils/getValidAccessToken";
 import BottomNav from "../components/BottomNav";
 export default function AddExpensePage() {
   const now = new Date();
-    const defaultDate = now.toISOString().split('T')[0];
-    const defaultTime = now.toTimeString().split(' ')[0].slice(0, 5);
+  const defaultDate = now.toISOString().split('T')[0];
+  const defaultTime = now.toTimeString().split(' ')[0].slice(0, 5);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [time, setTime] = useState(defaultTime);
@@ -17,7 +16,7 @@ export default function AddExpensePage() {
   const [date, setDate] = useState(defaultDate);
   const [category, setCategory] = useState("");
   const navigate = useNavigate();
-    
+
   const categories = ["Shopping", "Food", "Beverages", "Cosmetics", "Bill"];
 
   const handleSubmit = async (e) => {
@@ -86,11 +85,11 @@ export default function AddExpensePage() {
             className="rounded-2xl border px-4 py-2"
           />
           <Input
-  type="time"
-  value={time}
-  onChange={(e) => setTime(e.target.value)}
-  className="rounded-2xl border px-4 py-2"
-/>
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="rounded-2xl border px-4 py-2"
+          />
           <div>
             <p className="mb-2 font-medium">Category</p>
             <div className="flex flex-wrap gap-2">
@@ -116,9 +115,9 @@ export default function AddExpensePage() {
       </div>
 
       <div className="text-6xl absolute bottom-4 right-4">💸</div>
-    <BottomNav />
+      <BottomNav />
     </div>
-    
+
 
   );
 }
