@@ -50,8 +50,11 @@ Combined with **OpenCV** for image processing and **Tesseract OCR**, the app cre
 ## 🏗️ Tech Stack
 
 **Frontend:** React JS + Tailwind CSS  
+
 **Backend:** Django REST Framework + JWT Authentication
+
 **Database:** SQLite (easy dev) or MySQL (production)
+
 **AI/ML:** OpenCV + OCR for receipt reading
 
 ---
